@@ -1,10 +1,14 @@
+# Importing again just to write to file
 import torch.nn as nn
 import torch
-import torchvision
-from torch.utils.data import DataLoader
-
 from tqdm.auto import tqdm
 from typing import Dict, List, Tuple
+from sklearn.metrics import f1_score, accuracy_score
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+from torch.utils.data import *
+import matplotlib.pyplot as plt
+
+
 
 def train_step(
                model: torch.nn.Module, 
@@ -122,7 +126,8 @@ def train_model(
         epoches : int = 10,
         optim_func : torch.optim = torch.optim.Adam,
         learn_rate : float = 0.001,
-        device = DEVICE
+        device = DEVICE,
+        plot_loss_rates : bool = True
         ) -> torch.nn.Module:
     '''
     Function for fitting a model to a data
@@ -137,6 +142,8 @@ def train_model(
       "test_acc": []
    }
 
+    train_losses = []
+    test_losses = []
 
     for epoch in range(epoches):
         # Put model in train mode
@@ -153,6 +160,8 @@ def train_model(
            loss_funcion,
            device
             ) 
+        train_losses.append(train_loss)
+        test_losses.append(test_loss)
         print(
             f"Epoch: {epoch+1} | "
             f"train_loss: {train_loss:.4f} | "
@@ -160,6 +169,12 @@ def train_model(
             f"test_loss: {test_loss:.4f} | "
             f"test_acc: {test_acc:.4f}"
           )
+    if plot_loss_rates:
+      plt.figure(figsize=(8,6))
+      plt.plot(range(epoches), train_losses)
+      plt.plot(range(epoches), test_losses)
+      plt.show()
+
 
     # Update results dictionary
     results["train_loss"].append(train_loss)
@@ -168,6 +183,48 @@ def train_model(
     results["test_acc"].append(test_acc)
 
   # Return the filled results at the end of the epochs
-    return results
-            
+   
 
+def evalutation_model(
+      model : nn.Module,
+      evaluation_data : DataLoader,
+      loss_fn : nn,
+      device = DEVICE,
+      ):
+    '''
+    Function for model evalutation, should of made it work with test_step but doesn't matter too much.
+    Args:
+
+    Returns:
+    '''
+    
+    true_labels = []
+    predicted_labels = []
+    total_loss = 0
+    correct = 0
+    total = 0
+    model.eval().to(device)
+
+    with torch.no_grad():
+        for inputs, labels in evaluation_data:
+
+            inputs, labels = inputs.to(device), labels.to(device)          
+
+            outputs = model(inputs)
+
+            loss = loss_fn(outputs, labels)
+            total_loss += loss.item() 
+
+            _, predicted = torch.max(outputs.data, 1)
+            correct += (predicted == labels).sum().item()
+            total += labels.size(0)
+
+            true_labels.extend(labels.cpu().numpy())
+            predicted_labels.extend(predicted.cpu().numpy())
+
+    epoch_loss = total_loss / len(evaluation_data)
+    epoch_accuracy = correct / total
+    print(f1_score(true_labels, predicted_labels))
+
+    return epoch_loss, epoch_accuracy, true_labels, predicted_labels
+    

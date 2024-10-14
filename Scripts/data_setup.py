@@ -1,13 +1,14 @@
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
-
-
+from torch.utils.data import WeightedRandomSampler
+import torch
 def create_dataloaders(
     train_dir : str,
     test_dir : str,
     transform : transforms.Compose,
     batch_size : int,
-    num_workers : int
+    num_workers : int,
+    sampler = False
 ) -> list[DataLoader, DataLoader]:
     '''
     Function for creating dataloaders
@@ -28,13 +29,32 @@ def create_dataloaders(
                                      transform = transform
                                      )
 
-    # Load data into DataLoaders
-    train_dataloader = DataLoader(train_data, 
-                                  batch_size=batch_size, 
-                                  shuffle = True, 
-                                  num_workers = num_workers,
-                                  pin_memory = True # Pin memory is use to allow easier transfer to gpu
-                                  )
+    # Load into data loadsers
+    # If using weighted sampler
+    if sampler == True:
+ 
+        targets = torch.tensor(train_data.targets)  # Get the labels from the dataset
+        class_counts = torch.bincount(targets)   # Count how many samples per class
+        class_weights = 1.0 / class_counts.float()  # Inverse of the counts gives weights for each class
+
+
+        sample_weights = class_weights[targets]  # Create weights for each sample
+
+        # Create the WeightedRandomSampler
+        sampler = WeightedRandomSampler(weights=sample_weights, num_samples=len(sample_weights), replacement=True)
+        train_dataloader = DataLoader(train_data, 
+                                    batch_size=batch_size,  
+                                    num_workers = num_workers,
+                                    pin_memory = True,
+                                    sampler= sampler # Pin memory is use to allow easier transfer to gpu
+                                    )
+    else:
+        train_dataloader = DataLoader(train_data, 
+                                    batch_size=batch_size, 
+                                    num_workers = num_workers,
+                                    pin_memory = True,
+                                    shuffle=True # Pin memory is use to allow easier transfer to gpu
+                                    )
     test_dataloader = DataLoader(test_data, 
                                  batch_size=batch_size, 
                                  shuffle = True, 
