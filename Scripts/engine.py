@@ -222,9 +222,10 @@ def evalutation_model(
             true_labels.extend(labels.cpu().numpy())
             predicted_labels.extend(predicted.cpu().numpy())
 
-    epoch_loss = total_loss / len(evaluation_data)
-    epoch_accuracy = correct / total
-    print(f1_score(true_labels, predicted_labels))
+    test_loss = total_loss / len(evaluation_data)
+    test_accuracy = correct / total
+    print(f'The test f1 score of this model is {f1_score(true_labels, predicted_labels)}')
+    print(f'The test accuracy of this model is {test_accuracy}')
 
-    return epoch_loss, epoch_accuracy, true_labels, predicted_labels
+    return test_loss, test_accuracy, true_labels, predicted_labels
     
