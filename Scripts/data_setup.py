@@ -1,29 +1,35 @@
 from torchvision import datasets, transforms
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Dataset
 from torch.utils.data import WeightedRandomSampler
 import torch
 import numpy as np
 import random
 import os
+from PIL import Image
 
-class CustomImageFolder(torch.utils.data.Dataset):
+class CustomImageFolder(Dataset):
     def __init__(self, root, transform=None, is_valid_file=None):
      self.dataset = datasets.ImageFolder(root, is_valid_file=is_valid_file)
      self.transform = transform
      self.targets = self.dataset.targets
 
     def __getitem__(self, index):
-     image, label = self.dataset[index]
-     if self.transform:
-         image = self.transform(image=np.array(image))["image"] 
-     return image, label
+        image, label = self.dataset[index]
+        if self.transform:
+            image = self.transform(image=np.array(image))["image"] 
+            image = Image(image)
+        return image, label
 
     def __len__(self):
-     return len(self.dataset)
+        return len(self.dataset)
+
+
 
 def extract_patient_ids(filename):
     patient_id = filename.split('_')[0].replace("person", "")
     return patient_id
+
+
 
 def split_file_names(input_folder, val_split_perc):
     # Pneumonia files contain patient id, so we group split them by patient to avoid data leakage
@@ -128,7 +134,7 @@ def create_dataloaders_with_validation(
     sampler = False
 ) -> list[DataLoader, DataLoader]:
     '''
-    Function for creating dataloaders
+    Function for creating dataloaders, create specially for using albermentations
     Args:
         train_dir (str) : dir of training data
         test_dir (str) : dir of test data
@@ -136,16 +142,18 @@ def create_dataloaders_with_validation(
         batch_size (int) : Number of samples per batch 
         num_workers (int) : number of workers per dataloader
     '''
-    test_filenames, val_file_names = split_file_names(train_dir)
+    test_filenames, val_file_names = split_file_names(train_dir, 0.2)
+    print("Done splitting")
     # Using Imagefolder to load images
     # Images in seperate folders, one folder for each label
-    train_data = datasets.ImageFolder(root = train_dir, 
+    train_data = CustomImageFolder(root = train_dir, 
                                       transform = train_transform,
                                       is_valid_file=lambda x: x in test_filenames)
-    val_data = datasets.ImageFolder(root = train_dir,
+    print("Done training data")
+    val_data = CustomImageFolder(root = train_dir,
                                     transform=  test_transform,
                                     is_valid_file= lambda x : x in val_file_names)
-    test_data = datasets.ImageFolder(root = test_dir, 
+    test_data = CustomImageFolder(root = test_dir, 
                                      transform = test_transform
                                      )
 
@@ -175,6 +183,11 @@ def create_dataloaders_with_validation(
                                     pin_memory = True,
                                     shuffle=True # Pin memory is use to allow easier transfer to gpu
                                     )
+    val_dataloader = DataLoader(val_data,
+                                batch_size=batch_size,
+                            pin_memory= True,
+                            num_workers=num_workers)
+
     test_dataloader = DataLoader(test_data, 
                                  batch_size=batch_size, 
                                  shuffle = True, 
@@ -182,7 +195,7 @@ def create_dataloaders_with_validation(
                                  pin_memory = True
                                  )
 
-    return train_dataloader, test_dataloader
+    return train_dataloader, val_dataloader, test_dataloader
 
 
 
