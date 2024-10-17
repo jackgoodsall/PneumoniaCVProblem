@@ -37,9 +37,10 @@ def train_step(
 
   # Loop through data loader data batches
   for batch, (X, y) in enumerate(dataloader):
+      print(X, y)
       # Send data to target device
       X, y = X.to(device), y.to(device)
-
+      print("Transfred to devices!")
       # 1. Forward pass
       y_pred = model(X)
 
@@ -59,6 +60,7 @@ def train_step(
       # Calculate and accumulate accuracy metric across all batches
       y_pred_class = torch.argmax(torch.softmax(y_pred, dim=1), dim=1)
       train_acc += (y_pred_class == y).sum().item()/len(y_pred)
+      print("batch done")
 
   # Adjust metrics to get average loss and accuracy per batch 
   train_loss = train_loss / len(dataloader)
@@ -112,6 +114,7 @@ def test_step(
           test_pred_labels = test_pred.argmax(dim=1)
           test_acc += ((test_pred_labels == y).sum().item()/len(test_pred_labels))
 
+
   # Adjust metrics to get average loss and accuracy per batch 
   test_loss = test_loss / len(dataloader)
   test_acc = test_acc / len(dataloader)
@@ -132,7 +135,6 @@ def train_model(
     '''
     Function for fitting a model to a data
     '''
-    torch.cuda.empty_cache()
 
     optimiser = optim_func(model.parameters(), learn_rate)
 
@@ -144,7 +146,7 @@ def train_model(
 
     train_losses = []
     test_losses = []
-
+    print("Starting to train")
     for epoch in range(epoches):
         # Put model in train mode
         train_loss, train_acc = train_step(
@@ -154,6 +156,7 @@ def train_model(
            optimiser,
            device
           )
+        print("Train epoche done")
         test_loss, test_acc = test_step(
            model,
            test_data_loader,
