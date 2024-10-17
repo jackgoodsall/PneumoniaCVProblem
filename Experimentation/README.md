@@ -82,10 +82,67 @@ Didnt perform any better then model v5 and is more complex, next model will down
 ## Model v7
 32 filters size 3 -> 16 filters size 5 
 
-## Model v8
+* Accuracy - 84%
+* F1Score - 88%
 
+Model didnt seem to do that well, might have been a little bit too complex or maybe just the effect of having 10X the filters then channels. ( Effectively 2x the input space after pooling)
+
+## Model v8
+16(3) -> 32(3) -> Dense
+
+Returning to a simpler model
+
+* Accuracy - 89%
+* F1Score - 91%
 
 ## Model v9
+Folllowing on the theme of the above 16(3) -> 32(3) -> 64(3) -> Dense
+
+This effectively halfs the feature space each time after the pooling.
+
+* Accuracy - 88%
+* F1Score - 91%
 
 
 ## Model v10
+We know introduce a weighted random sampler, this should help balance the data set giving it better performance on the under represented class.
+
+* Accuracy -  89%
+* F1Score - 89%
+
+Notice a slight decrease in f1score but a slight increase in accuracy - showing better performance on the non pnuomnia class.
+
+## Model 11 
+Same as above with 30 epoches
+
+* Accuracy - 90%
+* F1Score - 92%
+
+The sampler seems to have made the model take longer to train, but has definately improved the overall performance.
+
+## Model 12 - Drop out
+One way that can help improve model performance is by introducing drop out on the dense layers, this in effect makes it not a dense layer, effectively turning of a % or neurons every epoche.
+
+* Accuracy - 
+* F1Score -
+
+# Transfer learning
+One way to avoid the computationaly expensive task of training the CNN's is to use transfer learning, that is using pretrained, premade models as a base of our network.
+
+# Model 13 - Baseline efficentnet
+
+Baseline training model on un augmented and un balanced data set. Image size was 256x256
+* F1SCORE - 86%
+* Accuracy - 81%
+
+# Model 14 - data augmentation + balancing
+* F1SCORE - 90%
+* Accuracy - 87%
+
+# Model 15 - abov with 224 image size 
+Both decrase
+
+# Model 16 - 14 with longer training 
+Not much increase over the shorter training.
+* F1SCCORE - 90%
+* Accuracy - 87%
