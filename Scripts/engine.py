@@ -37,10 +37,8 @@ def train_step(
 
   # Loop through data loader data batches
   for batch, (X, y) in enumerate(dataloader):
-      print(X, y)
       # Send data to target device
       X, y = X.to(device), y.to(device)
-      print("Transfred to devices!")
       # 1. Forward pass
       y_pred = model(X)
 
@@ -60,7 +58,6 @@ def train_step(
       # Calculate and accumulate accuracy metric across all batches
       y_pred_class = torch.argmax(torch.softmax(y_pred, dim=1), dim=1)
       train_acc += (y_pred_class == y).sum().item()/len(y_pred)
-      print("batch done")
 
   # Adjust metrics to get average loss and accuracy per batch 
   train_loss = train_loss / len(dataloader)
@@ -69,7 +66,7 @@ def train_step(
 
 
 def test_step(
-        model: torch.nn.Module, 
+              model: torch.nn.Module, 
               dataloader: torch.utils.data.DataLoader, 
               loss_fn: torch.nn.Module,
               device: torch.device) -> Tuple[float, float]:
@@ -130,13 +127,17 @@ def train_model(
         optim_func : torch.optim = torch.optim.Adam,
         learn_rate : float = 0.001,
         device = DEVICE,
-        plot_loss_rates : bool = True
+        plot_loss_rates : bool = True,
+        schedular = False,
+        schdular_paras = {}
         ) -> torch.nn.Module:
     '''
     Function for fitting a model to a data
     '''
-
+    print(schdular_paras)
     optimiser = optim_func(model.parameters(), learn_rate)
+    if schedular:
+       schedularr = schedular(optimizer = optimiser, **schdular_paras)
 
     results = {"train_loss": [],
       "train_acc": [],
@@ -146,7 +147,6 @@ def train_model(
 
     train_losses = []
     test_losses = []
-    print("Starting to train")
     for epoch in range(epoches):
         # Put model in train mode
         train_loss, train_acc = train_step(
@@ -156,13 +156,15 @@ def train_model(
            optimiser,
            device
           )
-        print("Train epoche done")
+        
         test_loss, test_acc = test_step(
            model,
            test_data_loader,
            loss_funcion,
            device
             ) 
+        if schedular:
+          schedularr.step()
         train_losses.append(train_loss)
         test_losses.append(test_loss)
         print(
