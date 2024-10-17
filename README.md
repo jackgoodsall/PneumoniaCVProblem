@@ -23,3 +23,5 @@ The training data was massively skewed towards pneuomnia cases, this massively i
 
 Models changes and their effect of classifcation metrics will be log in md file in the Experimentation file.
 
+# Final Model
+Final model was a EfficientNetV2S, with data augmentation and a weighted sampler. It achieved an accuracy of 90%, an achievement of 10% over the baseline mode which has 10%.
