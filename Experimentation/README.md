@@ -133,16 +133,24 @@ One way to avoid the computationaly expensive task of training the CNN's is to u
 
 Baseline training model on un augmented and un balanced data set. Image size was 256x256
 * F1SCORE - 86%
-* Accuracy - 81%
+* Accuracy - 80%
 
 # Model 14 - data augmentation + balancing
 * F1SCORE - 90%
 * Accuracy - 87%
 
 # Model 15 - abov with 224 image size 
-Both decrase
+Both decreased. So will stick with 256x256 iamges.
 
 # Model 16 - 14 with longer training 
 Not much increase over the shorter training.
 * F1SCCORE - 90%
 * Accuracy - 87%
+
+# Model 17 - LR schedular
+Model tested a LR schedular to adapatively change the LR as it trained.
+
+* f1score - 87%
+* accuracy - 86%
+
+Showed decrease in accuaracy and f1 score, maybe could try different schedulars in the future or early stopping.
