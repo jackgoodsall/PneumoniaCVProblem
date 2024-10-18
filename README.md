@@ -24,4 +24,17 @@ The training data was massively skewed towards pneuomnia cases, this massively i
 Models changes and their effect of classifcation metrics will be log in md file in the Experimentation file.
 
 # Final Model
-Final model was a EfficientNetV2S, with data augmentation and a weighted sampler. It achieved an accuracy of 90%, an achievement of 10% over the baseline mode which has 10%.
+Final model was a EfficientNetV2S, with data augmentation and a weighted sampler. It achieved an accuracy of 88%, an achievement of 8% over the baseline mode which has 10%.
+
+# Potential future improvements
+Further potential improvements to the model could involve things like moving to albumenations for data augmentation (I tried my pc didn't like it), adding early stopping, playing around with different learn rate scedular, and testing different pretrained models.
+
+
+# What this project taught me
+Altough there is definately room for further improvements on my final model, without the resources (computing units on google colab) most will take too much time to implement and run to effectively look at impact so at this time I don't think it teach me more then looking at other areas will.
+
+Granted this I still learnt a few things doing this project
+
+* 1. Modular functionality - throughout this project I a few times had to adapt or make new functions and in the future I think i will have a better base for developing these functions out from the start.
+* 2.  Bigger doesnt mean better - Just because a model has more layers, more weights, more filters, more whatever doesn't make it inherently better.
+* 3. Training models takes time :(
